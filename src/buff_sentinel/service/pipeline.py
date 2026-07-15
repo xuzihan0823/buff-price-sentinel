@@ -242,7 +242,20 @@ class CollectionPipeline:
             snapshots = self.repository.snapshots_for(item.goods_id, seven_days_ago)
             trend = compute_trends(item.goods_id, snapshots, now)
             if isinstance(item, OwnedItem):
-                for c in self.rule_engine.evaluate_owned(item, trend, now):
+                previous_sell = next(
+                    (
+                        snapshot.sell_min_price
+                        for snapshot in reversed(snapshots[:-1])
+                        if snapshot.sell_min_price is not None
+                    ),
+                    None,
+                )
+                for c in self.rule_engine.evaluate_owned(
+                    item,
+                    trend,
+                    now,
+                    previous_sell=previous_sell,
+                ):
                     emitted.append((item, c))
             else:
                 last = self.repository.last_analysis_at(item.goods_id)

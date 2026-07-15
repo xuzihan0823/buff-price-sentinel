@@ -111,8 +111,9 @@ class OwnedItem(_StrictModel):
     goods_id: int = Field(ge=1)
     name: str
     purchase_price: float = Field(gt=0)
-    profit_pct: float = Field(gt=0)
-    loss_pct: float = Field(gt=0)
+    profit_pct: float | None = Field(default=None, gt=0)
+    loss_pct: float | None = Field(default=None, gt=0)
+    alert_above_price: float | None = Field(default=None, gt=0)
 
     @field_validator("name")
     @classmethod
@@ -120,6 +121,18 @@ class OwnedItem(_StrictModel):
         if not value.strip():
             raise ValueError("name is required")
         return value
+
+    @model_validator(mode="after")
+    def _require_one_trigger(self) -> OwnedItem:
+        if (
+            self.profit_pct is None
+            and self.loss_pct is None
+            and self.alert_above_price is None
+        ):
+            raise ValueError(
+                "owned item must define profit_pct, loss_pct, or alert_above_price"
+            )
+        return self
 
 
 class WishlistItem(_StrictModel):
@@ -162,10 +175,10 @@ class Config(_StrictModel):
     @model_validator(mode="after")
     def _validate_items(self) -> Config:
         total = len(self.owned) + len(self.wishlist)
-        if total < 10:
-            raise ValueError("config must define between 10 and 100 items")
+        if total < 1:
+            raise ValueError("config must define between 1 and 100 items")
         if total > 100:
-            raise ValueError("config must define between 10 and 100 items")
+            raise ValueError("config must define between 1 and 100 items")
         seen: set[int] = set()
         combined: list[OwnedItem | WishlistItem] = [*self.owned, *self.wishlist]
         for item in combined:

@@ -12,6 +12,7 @@ from buff_sentinel.config.schema import OwnedItem, WishlistItem
 TriggerKind = Literal[
     "owned_profit",
     "owned_loss",
+    "owned_above",
     "wishlist_floor",
     "wishlist_drop",
     "wishlist_rise",
@@ -49,6 +50,8 @@ class RuleEngine:
         item: OwnedItem,
         trend: TrendSummary,
         now: datetime,
+        *,
+        previous_sell: float | None = None,
     ) -> list[Candidate]:
         if trend.latest_sell is None:
             return []
@@ -58,7 +61,7 @@ class RuleEngine:
         pnl_pct = (trend.latest_sell - purchase) / purchase * 100.0
 
         candidates: list[Candidate] = []
-        if pnl_pct >= item.profit_pct:
+        if item.profit_pct is not None and pnl_pct >= item.profit_pct:
             candidates.append(
                 Candidate(
                     goods_id=item.goods_id,
@@ -78,7 +81,7 @@ class RuleEngine:
                     generated_at=now,
                 )
             )
-        elif pnl_pct <= -item.loss_pct:
+        elif item.loss_pct is not None and pnl_pct <= -item.loss_pct:
             candidates.append(
                 Candidate(
                     goods_id=item.goods_id,
@@ -93,6 +96,34 @@ class RuleEngine:
                         "purchase_price": purchase,
                         "pnl_pct": round(pnl_pct, 4),
                         "threshold_pct": -item.loss_pct,
+                    },
+                    dedup_bucket=_bucket_hour(now, 1),
+                    generated_at=now,
+                )
+            )
+
+        threshold = item.alert_above_price
+        if (
+            threshold is not None
+            and previous_sell is not None
+            and previous_sell < threshold <= trend.latest_sell
+        ):
+            candidates.append(
+                Candidate(
+                    goods_id=item.goods_id,
+                    name=item.name,
+                    kind="owned",
+                    trigger="owned_above",
+                    reason=(
+                        f"sell_min crossed above {threshold:.2f}: "
+                        f"{previous_sell:.2f} -> {trend.latest_sell:.2f}"
+                    ),
+                    metrics={
+                        "sell_min_price": trend.latest_sell,
+                        "previous_sell_price": previous_sell,
+                        "purchase_price": purchase,
+                        "pnl_pct": round(pnl_pct, 4),
+                        "alert_above_price": threshold,
                     },
                     dedup_bucket=_bucket_hour(now, 1),
                     generated_at=now,
@@ -242,6 +273,7 @@ def build_signal_snapshot(
             "purchase_price": item.purchase_price,
             "profit_pct": item.profit_pct,
             "loss_pct": item.loss_pct,
+            "alert_above_price": item.alert_above_price,
         }
     else:
         payload["wishlist"] = {

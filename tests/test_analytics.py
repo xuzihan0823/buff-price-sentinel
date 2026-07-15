@@ -76,6 +76,30 @@ def test_owned_loss_trigger() -> None:
     assert candidates[0].trigger == "owned_loss"
 
 
+def test_owned_price_crossing_fires_once() -> None:
+    now = datetime(2026, 7, 14, 12, 0, 0)
+    item = OwnedItem(
+        goods_id=872000,
+        name="Butterfly Knife",
+        purchase_price=4150.0,
+        alert_above_price=4000.0,
+    )
+    trend = compute_trends(
+        872000,
+        [_snap(872000, now - timedelta(minutes=1), 4010.0)],
+        now,
+    )
+    engine = RuleEngine()
+
+    crossed = engine.evaluate_owned(item, trend, now, previous_sell=3795.0)
+    assert len(crossed) == 1
+    assert crossed[0].trigger == "owned_above"
+    assert crossed[0].metrics["alert_above_price"] == 4000.0
+
+    assert engine.evaluate_owned(item, trend, now, previous_sell=4005.0) == []
+    assert engine.evaluate_owned(item, trend, now, previous_sell=None) == []
+
+
 def test_wishlist_floor_and_drop_triggers() -> None:
     now = datetime(2026, 7, 14, 12, 0, 0)
     item = WishlistItem(

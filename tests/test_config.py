@@ -127,7 +127,42 @@ qq_bot:
     assert cfg.buff.session_cookie == ""
 
 
-def test_fewer_than_ten_items_rejected(tmp_path: Path) -> None:
+def test_single_owned_item_allowed(tmp_path: Path) -> None:
+    yaml_text = """
+llm:
+  base_url: "https://x"
+  api_key: "k"
+  model: "m"
+qq_bot:
+  app_id: "a"
+  client_secret: "s"
+  recipients: ["o1"]
+owned:
+  - goods_id: 872000
+    name: "Butterfly Knife"
+    purchase_price: 4150.0
+    alert_above_price: 4000.0
+"""
+    cfg = load_config(_write(tmp_path, yaml_text), env={})
+    assert cfg.owned[0].alert_above_price == 4000.0
+
+
+def test_zero_items_rejected(tmp_path: Path) -> None:
+    yaml_text = """
+llm:
+  base_url: "https://x"
+  api_key: "k"
+  model: "m"
+qq_bot:
+  app_id: "a"
+  client_secret: "s"
+  recipients: ["o1"]
+"""
+    with pytest.raises(ConfigError, match="between 1 and 100"):
+        load_config(_write(tmp_path, yaml_text), env={})
+
+
+def test_owned_requires_trigger(tmp_path: Path) -> None:
     yaml_text = """
 llm:
   base_url: "https://x"
@@ -141,11 +176,10 @@ owned:
   - goods_id: 1
     name: "N"
     purchase_price: 1.0
-    profit_pct: 1.0
-    loss_pct: 1.0
 """
-    with pytest.raises(ConfigError, match="between 10 and 100"):
+    with pytest.raises(ConfigError, match="owned item must define"):
         load_config(_write(tmp_path, yaml_text), env={})
+
 
 
 def test_wishlist_requires_trigger(tmp_path: Path) -> None:

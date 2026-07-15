@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from buff_sentinel.buff.client import GoodsQuote
-from buff_sentinel.config.schema import Config
+from buff_sentinel.config.schema import Config, OwnedItem
 from buff_sentinel.llm.client import LLMAnalysisResult
 from buff_sentinel.notifier.qq import QQSendResult
 from buff_sentinel.service.pipeline import CollectionPipeline
@@ -275,6 +275,41 @@ async def test_dry_run_skips_llm_qq_and_dedup(sample_config: Config) -> None:
     # Dedup state untouched: a subsequent real run still creates the alert.
     real = await env.pipeline.run_once(dry_run=False)
     assert real.alerts_created >= 1
+
+
+async def test_owned_above_price_crosses_once(sample_config: Config) -> None:
+    now = datetime(2026, 7, 14, 12, 0, 0)
+    sample_config.owned = [
+        OwnedItem(
+            goods_id=872000,
+            name="Butterfly Knife",
+            purchase_price=4150.0,
+            alert_above_price=4000.0,
+        )
+    ]
+    sample_config.wishlist = []
+    env = _build(
+        sample_config,
+        quotes={872000: _quote(872000, 3795.0, 3700.0)},
+        now=now,
+    )
+
+    baseline = await env.pipeline.run_once()
+    assert baseline.candidates == 0
+
+    later = now + timedelta(minutes=10)
+    env.pipeline._clock = lambda: later  # type: ignore[method-assign]
+    env.buff.quotes[872000] = _quote(872000, 4010.0, 3900.0)
+    crossed = await env.pipeline.run_once()
+    assert crossed.alerts_created == 1
+    assert crossed.alerts_sent == 1
+
+    still_above = later + timedelta(hours=2)
+    env.pipeline._clock = lambda: still_above  # type: ignore[method-assign]
+    env.buff.quotes[872000] = _quote(872000, 4020.0, 3910.0)
+    repeated = await env.pipeline.run_once()
+    assert repeated.candidates == 0
+    assert repeated.alerts_created == 0
 
 
 async def test_wishlist_review_reuses_dedup_bucket(sample_config: Config) -> None:

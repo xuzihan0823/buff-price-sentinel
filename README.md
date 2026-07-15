@@ -7,7 +7,7 @@ alerts through the official QQ Bot C2C API.
 
 ## Highlights
 
-- Strict split-YAML config for 10-100 goods, divided into `owned` and
+- Strict split-YAML config for 1-100 goods, divided into `owned` and
   `wishlist`.
 - Async BUFF first-page sell/buy client with pacing, retries, partial-data
   handling, and no zero-price writes.
@@ -50,9 +50,11 @@ buff-sentinel once --config-dir config --dry-run
 buff-sentinel run --config-dir config
 ```
 
-The production constraint is 10-100 unique goods across `owned` and
-`wishlist`. Local config files, `.env` files, and SQLite data are ignored by
-Git. Do not commit them.
+The production constraint is 1-100 unique goods across `owned` and `wishlist`.
+Owned goods support relative `profit_pct` / `loss_pct` alerts and an absolute
+`alert_above_price`, which fires only when the sell floor crosses upward from
+below the configured price. Local config files, `.env` files, and SQLite data
+are ignored by Git. Do not commit them.
 
 ## Configuration
 

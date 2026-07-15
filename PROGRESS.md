@@ -1,5 +1,16 @@
 # BUFF Price Sentinel — Progress Log
 
+## 2026-07-15
+
+Deployment preparation and single-item alert support completed:
+
+- Configuration now accepts 1-100 goods.
+- Owned goods can use `alert_above_price`; it fires only on an upward crossing
+  and does not repeat while the price remains above the threshold.
+- Added config, rule, and multi-round pipeline regressions for the new behavior.
+- Public GitHub repository and the first GHCR release were published; production
+  deployment awaits the new rule image and the new QQ Bot's user openid.
+
 ## 2026-07-14
 
 Initial MVP implementation completed.
@@ -59,7 +70,7 @@ Initial MVP implementation completed.
 
 ### Follow-ups
 
-- Collect the real 10-100 goods configuration and LLM/QQ credentials, then run
+- Collect the real 1-100 goods configuration and LLM/QQ credentials, then run
   the authorized BUFF dry-run, LLM analysis, QQ delivery, persistence, and
   healthcheck smoke tests.
 - Publish the public GitHub repository and GHCR image, then deploy the reported

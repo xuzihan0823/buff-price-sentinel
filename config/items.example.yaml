@@ -1,14 +1,16 @@
-# Owned + wishlist goods definitions (10-100 items total).
+# Owned + wishlist goods definitions (1-100 items total).
 # Copy to items.yaml and edit. Real config is gitignored.
 
-# Owned entries: fire when profit or loss crosses the configured percentage
-# (measured from sell_min_price vs purchase_price).
+# Owned entries can use relative P/L percentages, an absolute upward crossing,
+# or both. `alert_above_price` fires only when sell_min moves from below the
+# threshold to the threshold or above; staying above does not repeat the alert.
 owned:
   - goods_id: 762000
     name: "AK-47 | Redline (FT)"
     purchase_price: 105.50
     profit_pct: 15.0
     loss_pct: 10.0
+    alert_above_price: 150.0
   - goods_id: 762001
     name: "AK-47 | Redline (MW)"
     purchase_price: 145.00

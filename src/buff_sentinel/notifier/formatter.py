@@ -25,9 +25,11 @@ def format_alert_text(
     price_lines = []
     for key in (
         "sell_min_price",
+        "previous_sell_price",
         "buy_max_price",
         "purchase_price",
         "target_price",
+        "alert_above_price",
         "pnl_pct",
         "change_pct_24h",
         "threshold_pct",
