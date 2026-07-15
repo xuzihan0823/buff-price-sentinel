@@ -57,6 +57,7 @@ class BuffClient:
             base_url=config.base_url,
             timeout=config.timeout_seconds,
             headers=self._default_headers(),
+            proxy=config.proxy_url or None,
         )
         self._sem = asyncio.Semaphore(config.max_concurrency)
         self._sleep = sleep or asyncio.sleep

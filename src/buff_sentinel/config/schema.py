@@ -38,6 +38,7 @@ class CollectionConfig(_StrictModel):
 
 class BuffConfig(_StrictModel):
     base_url: str = "https://buff.163.com"
+    proxy_url: str = ""
     sell_order_path: str = "/api/market/goods/sell_order"
     buy_order_path: str = "/api/market/goods/buy_order"
     request_interval_ms: int = Field(default=1500, ge=0, le=60000)

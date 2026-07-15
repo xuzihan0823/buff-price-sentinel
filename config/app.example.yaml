@@ -16,6 +16,8 @@ collection:
 
 buff:
   base_url: "https://buff.163.com"
+  # Optional HTTP/SOCKS proxy. Useful when the deployment IP is blocked by BUFF.
+  proxy_url: "${BUFF_PROXY_URL:-}"
   sell_order_path: "/api/market/goods/sell_order"
   buy_order_path: "/api/market/goods/buy_order"
   request_interval_ms: 1500

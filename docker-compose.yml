@@ -11,6 +11,7 @@ services:
       - QQ_CLIENT_SECRET=${QQ_CLIENT_SECRET:?QQ_CLIENT_SECRET is required}
       - QQ_RECIPIENT_OPENID=${QQ_RECIPIENT_OPENID:?QQ_RECIPIENT_OPENID is required}
       - BUFF_SESSION_COOKIE=${BUFF_SESSION_COOKIE:-}
+      - BUFF_PROXY_URL=${BUFF_PROXY_URL:-}
     volumes:
       - ./config:/app/config:ro
       - buff-price-sentinel-data:/app/data
