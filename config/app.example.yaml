@@ -1,0 +1,32 @@
+# Application, collection, BUFF client, and alert settings.
+# Secrets stay in environment variables; copy to app.yaml and edit as needed.
+
+app:
+  timezone: "Asia/Shanghai"
+  database_url: "${BUFF_SENTINEL_DATABASE_URL:-sqlite:////app/data/buff-sentinel.db}"
+  log_level: "INFO"
+
+collection:
+  interval_seconds: 600          # 10 minutes per PRD
+  schedule_jitter_seconds: 30    # avoids lockstep cadence
+  probe_interval_seconds: 300    # independent QQ recovery probe; 0 disables
+  snapshot_retention_days: 7      # PRD: rolling 7-day history
+  history_retention_days: 90     # alerts / analyses / incidents
+  wishlist_review_days: 3        # re-analyze each wishlist item every 3 days
+
+buff:
+  base_url: "https://buff.163.com"
+  sell_order_path: "/api/market/goods/sell_order"
+  buy_order_path: "/api/market/goods/buy_order"
+  request_interval_ms: 1500
+  jitter_ms: 400
+  max_concurrency: 2
+  timeout_seconds: 15
+  max_retries: 3
+  # Optional session cookie for authenticated calls. Prefer the env var.
+  session_cookie: "${BUFF_SESSION_COOKIE:-}"
+  user_agent: "buff-price-sentinel/0.1"
+
+alerts:
+  dedup_window_minutes: 120
+  goods_cooldown_minutes: 60

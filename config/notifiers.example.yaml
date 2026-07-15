@@ -1,0 +1,14 @@
+# Official QQ Bot C2C notifier. Copy to notifiers.yaml and edit.
+
+qq_bot:
+  token_url: "https://bots.qq.com/app/getAppAccessToken"
+  message_base_url: "https://api.sgroup.qq.com"
+  app_id: "${QQ_APP_ID}"
+  client_secret: "${QQ_CLIENT_SECRET}"
+  recipients:
+    - "${QQ_RECIPIENT_OPENID}"
+  # Optional lightweight probe text sent during outage recovery. If empty,
+  # the recovery probe only fetches an access token.
+  probe_message: ""
+  timeout_seconds: 15
+  max_retries: 2

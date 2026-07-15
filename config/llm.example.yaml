@@ -1,0 +1,11 @@
+# OpenAI-compatible LLM (new-api gateway). Copy to llm.yaml and edit.
+# The user-facing field is `model_id`; `model` is also accepted as an alias.
+
+llm:
+  base_url: "https://your-new-api.example.com/v1"
+  api_key: "${LLM_API_KEY}"
+  model_id: "gpt-4o-mini"
+  timeout_seconds: 20
+  max_retries: 2
+  # When true, empty/invalid LLM output falls back to rule-only alerts.
+  fail_open: true

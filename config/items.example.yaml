@@ -1,0 +1,52 @@
+# Owned + wishlist goods definitions (10-100 items total).
+# Copy to items.yaml and edit. Real config is gitignored.
+
+# Owned entries: fire when profit or loss crosses the configured percentage
+# (measured from sell_min_price vs purchase_price).
+owned:
+  - goods_id: 762000
+    name: "AK-47 | Redline (FT)"
+    purchase_price: 105.50
+    profit_pct: 15.0
+    loss_pct: 10.0
+  - goods_id: 762001
+    name: "AK-47 | Redline (MW)"
+    purchase_price: 145.00
+    profit_pct: 15.0
+    loss_pct: 10.0
+  - goods_id: 762002
+    name: "M4A4 | Neo-Noir (FT)"
+    purchase_price: 120.00
+    profit_pct: 15.0
+    loss_pct: 10.0
+  - goods_id: 762003
+    name: "M4A1-S | Player Two (FT)"
+    purchase_price: 98.00
+    profit_pct: 15.0
+    loss_pct: 10.0
+  - goods_id: 762004
+    name: "USP-S | Cortex (FT)"
+    purchase_price: 35.00
+    profit_pct: 15.0
+    loss_pct: 10.0
+
+# Wishlist entries: trigger on target floor price, 24h drop, or 24h rise.
+# Each item is analyzed at least once every `collection.wishlist_review_days`.
+wishlist:
+  - goods_id: 776543
+    name: "AWP | Asiimov (FT)"
+    target_price: 220.00      # fire when sell_min <= target
+    drop_pct_24h: 8.0         # fire when 24h change <= -8%
+    rise_pct_24h: 12.0        # fire when 24h change >= +12%
+  - goods_id: 776544
+    name: "AK-47 | Vulcan (FT)"
+    target_price: 180.00
+  - goods_id: 776545
+    name: "M4A1-S | Printstream (FT)"
+    target_price: 150.00
+  - goods_id: 776546
+    name: "Desert Eagle | Printstream (FT)"
+    target_price: 90.00
+  - goods_id: 776547
+    name: "Glock-18 | Vogue (FT)"
+    target_price: 25.00

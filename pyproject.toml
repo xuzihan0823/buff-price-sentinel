@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "buff-price-sentinel"
+version = "0.1.0"
+description = "Monitor BUFF CS2 goods prices with LLM analysis and QQ Bot alerts"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Anyu" }]
+dependencies = [
+    "httpx>=0.27,<0.29",
+    "pydantic>=2.6,<3",
+    "PyYAML>=6.0,<7",
+    "SQLAlchemy>=2.0,<3",
+    "APScheduler>=3.10,<4",
+    "typer>=0.12,<0.16",
+    "python-dateutil>=2.9,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<9",
+    "pytest-asyncio>=0.23,<1",
+    "respx>=0.21,<1",
+    "ruff>=0.5,<1",
+    "mypy>=1.10,<2",
+    "types-PyYAML",
+    "types-python-dateutil",
+]
+
+[project.scripts]
+buff-sentinel = "buff_sentinel.cli:app"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "PL"]
+ignore = ["PLR0913", "PLR2004", "PLR0912", "PLR0911", "PLR0915", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLR2004", "S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+ignore_missing_imports = true
+packages = ["buff_sentinel"]
+mypy_path = "src"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]

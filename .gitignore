@@ -1,0 +1,45 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Project runtime data
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Local config with secrets (examples tracked separately)
+config.yaml
+config.local.yaml
+config/app.yaml
+config/items.yaml
+config/llm.yaml
+config/notifiers.yaml
+.env
+.env.*
+secrets.env
+RELEASE
+backups/
+
+# Editors
+.idea/
+.vscode/
+*.swp
+.DS_Store
