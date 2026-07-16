@@ -386,6 +386,152 @@ sqlite:////app/data/buff-sentinel.db
 
 应用数据保存在名为 `buff-price-sentinel-data` 的 Docker 卷中，重新创建容器不会清除历史数据。
 
+### `items.yaml` 填写摘要
+
+先复制示例配置：
+
+```bash
+cp config/items.example.yaml config/items.yaml
+```
+
+Windows PowerShell 使用：
+
+```powershell
+Copy-Item config/items.example.yaml config/items.yaml
+```
+
+`items.yaml` 分为两类：
+
+- `owned`：已经持有的商品，根据买入价判断盈利、亏损或价格向上突破。
+- `wishlist`：准备购买或持续观察的商品，根据目标价格及 24 小时涨跌幅提醒。
+
+完整示例：
+
+```yaml
+owned:
+  - goods_id: 762000
+    name: "AK-47 | 红线（久经沙场）"
+    purchase_price: 105.50
+    profit_pct: 15.0
+    loss_pct: 10.0
+    alert_above_price: 150.0
+
+wishlist:
+  - goods_id: 776543
+    name: "AWP | 二西莫夫（久经沙场）"
+    target_price: 220.00
+    drop_pct_24h: 8.0
+    rise_pct_24h: 12.0
+```
+
+通用字段：
+
+| 字段 | 是否必填 | 说明 |
+| --- | --- | --- |
+| `goods_id` | 是 | BUFF 商品 ID，必须是大于或等于 1 的整数；可从商品页面 URL 的 `goods_id=...` 中取得 |
+| `name` | 是 | 用于日志、LLM 分析和 QQ 提醒的显示名称，建议包含皮肤名称、磨损和特殊类型 |
+
+例如商品页面 URL 为：
+
+```text
+https://buff.163.com/market/goods?goods_id=762000
+```
+
+则填写：
+
+```yaml
+goods_id: 762000
+```
+
+不要填写 Steam `assetid`、某一件饰品的卖单 ID、整个网址或 QQ 号。`name` 不参与查询，真正用于请求 BUFF 的是 `goods_id`。
+
+`owned` 字段：
+
+| 字段 | 是否必填 | 说明 |
+| --- | --- | --- |
+| `purchase_price` | 是 | 实际买入成本，必须大于 0，单位为人民币元，不要带 `¥` 符号 |
+| `profit_pct` | 三选一 | 盈利比例达到该值时提醒，例如 `15.0` 表示 15% |
+| `loss_pct` | 三选一 | 亏损比例达到该值时提醒，填写正数，例如 `10.0` 表示下跌 10% |
+| `alert_above_price` | 三选一 | 最低卖价从阈值下方向上突破该价格时提醒 |
+
+`profit_pct`、`loss_pct`、`alert_above_price` 至少填写一个，也可以同时填写。盈利和亏损按以下公式计算：
+
+```text
+收益率 = (当前最低卖价 - 买入价) ÷ 买入价 × 100%
+```
+
+例如买入价为 100 元：
+
+- `profit_pct: 15.0`：最低卖价达到或超过 115 元时满足盈利条件。
+- `loss_pct: 10.0`：最低卖价降至或低于 90 元时满足亏损条件。
+- `alert_above_price: 150.0`：价格从低于 150 元上涨到 150 元或以上时提醒；持续高于 150 元不会每轮重复提醒。首次采集没有上一轮价格，因此不会立即触发向上突破提醒。
+
+`wishlist` 字段：
+
+| 字段 | 是否必填 | 说明 |
+| --- | --- | --- |
+| `target_price` | 三选一 | 当前最低卖价低于或等于该价格时提醒 |
+| `drop_pct_24h` | 三选一 | 24 小时跌幅达到该正数百分比时提醒，例如 `8.0` 表示下跌至少 8% |
+| `rise_pct_24h` | 三选一 | 24 小时涨幅达到该正数百分比时提醒，例如 `12.0` 表示上涨至少 12% |
+
+`target_price`、`drop_pct_24h`、`rise_pct_24h` 至少填写一个，也可以同时填写。24 小时涨跌幅需要积累历史快照，刚启动时通常没有足够的趋势数据；`target_price` 可以根据当前最低卖价立即判断。
+
+填写约束：
+
+- `owned` 与 `wishlist` 合计必须有 1–100 件商品。
+- 所有 `goods_id` 必须唯一，同一商品不能同时出现在两类中。
+- 百分比填写正数：15% 写作 `15.0`，不是 `0.15`，亏损 10% 写作 `10.0`，不是 `-10.0`。
+- 所有价格和百分比必须大于 0，价格不要带货币符号或千位逗号。
+- YAML 只能使用空格缩进，不能使用 Tab；建议字符串加双引号。
+- 不需要的可选字段应直接删除，不要留空或写成 `0`。
+- 配置不接受未定义的字段，字段名拼错会导致校验失败。
+
+仅配置已持有商品时，可以保留空愿望单：
+
+```yaml
+owned:
+  - goods_id: 762000
+    name: "AK-47 | 红线（久经沙场）"
+    purchase_price: 105.50
+    profit_pct: 15.0
+
+wishlist: []
+```
+
+仅配置愿望单时：
+
+```yaml
+owned: []
+
+wishlist:
+  - goods_id: 776543
+    name: "AWP | 二西莫夫（久经沙场）"
+    target_price: 220.00
+```
+
+保存后校验配置：
+
+```bash
+docker compose --env-file secrets.env run --rm buff-sentinel \
+  validate-config --config-dir /app/config
+```
+
+如果容器已经启动，也可以执行：
+
+```bash
+docker compose --env-file secrets.env exec -T buff-sentinel \
+  buff-sentinel validate-config --config-dir /app/config
+```
+
+配置校验成功后，建议先执行一次安全试采集：
+
+```bash
+docker compose --env-file secrets.env exec -T buff-sentinel \
+  buff-sentinel once --config-dir /app/config --dry-run
+```
+
+### 其他提醒字段
+
 已持有商品支持：
 
 - `profit_pct`：盈利比例提醒
