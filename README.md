@@ -455,6 +455,7 @@ docker compose --env-file secrets.env up -d --remove-orphans
 
 有关 `config`、`buff`、`storage`、`analytics`、`llm`、`notifier`、`service` 和 `cli` 各分层边界的说明，请参阅 `.trellis/tasks/07-14-buff-price-sentinel/design.md`。
 
-## 许可证
+## 如果你认为本项目对你有帮助，可以打赏一下作者吗
+![alt text](IMG_0393.jpeg)
 
-MIT。
+
